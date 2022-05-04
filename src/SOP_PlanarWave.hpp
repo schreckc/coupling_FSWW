@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,10 @@
  *----------------------------------------------------------------------------
  * PlanarWave SOP
  *----------------------------------------------------------------------------
+ * At first frame, compute the spectrum a each point of the grid (input 0) by 
+ * summing the contribution of all sources (each other input is a set of sources).
+ * At each frame, sum the contribution of each wavelength at each point to get 
+ * the height (according to the spectrum of the point).
  */
 
 

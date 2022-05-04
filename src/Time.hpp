@@ -26,62 +26,60 @@ private :
 
 public :
   Times() {
-  init();
-}
+    init();
+  }
 
   
   void init() {
-  for (unsigned int i = 0; i < nTimes; ++i) {
-    init_time[i] = not_a_date_time;
-    loop_time[i] = 0;
-    time_sum[i] = 0;
+    for (unsigned int i = 0; i < nTimes; ++i) {
+      init_time[i] = not_a_date_time;
+      loop_time[i] = 0;
+      time_sum[i] = 0;
+    }
+    frame = 0;
+    step = 0;
   }
-  frame = 0;
-  step = 0;
-}
 
   void tick(unsigned int i) {
-  init_time[i] = microsec_clock::local_time();
-}
+    init_time[i] = microsec_clock::local_time();
+  }
 
   void tock(unsigned int i) {
-  assert(init_time[i] != not_a_date_time);
-  ptime t_end = microsec_clock::local_time();
-   loop_time[i] += (t_end - init_time[i]).total_microseconds()*1e-6;
-   init_time[i] = not_a_date_time;
-}
+    assert(init_time[i] != not_a_date_time);
+    ptime t_end = microsec_clock::local_time();
+    loop_time[i] += (t_end - init_time[i]).total_microseconds()*1e-6;
+    init_time[i] = not_a_date_time;
+  }
 
   double getTime(unsigned int i) {
-  return loop_time[i];
-}
+    return loop_time[i];
+  }
 
   double getAverageTime(unsigned int i) {
-  //  INFO("time_sum[i]", time_sum[i]<<" "<<cpt<<" "<<time_sum[i]/((double)cpt));
-  return time_sum[i]/((double)frame);
-}
+    return time_sum[i]/((double)frame);
+  }
 
   double getAverageTimeByStep(unsigned int i) {
-  //  INFO("time_sum[i]", time_sum[i]<<" "<<cpt<<" "<<time_sum[i]/((double)cpt));
-  return time_sum[i]/((double)step);
-}
+    return time_sum[i]/((double)step);
+  }
 
   double getAverageNbStepsByFrame() {
-  return (double) step / ((double) frame);
-}
+    return (double) step / ((double) frame);
+  }
 
   
   void next_loop() {
-  for (unsigned int i = 0; i < nTimes; ++i) {
-    time_sum[i] += loop_time[i];
-    init_time[i] = not_a_date_time;
-    loop_time[i] = 0;
-  }
+    for (unsigned int i = 0; i < nTimes; ++i) {
+      time_sum[i] += loop_time[i];
+      init_time[i] = not_a_date_time;
+      loop_time[i] = 0;
+    }
 
-  ++frame;
-}
+    ++frame;
+  }
   void next_step()  {
-  ++step;
-}
+    ++step;
+  }
 
 };
 

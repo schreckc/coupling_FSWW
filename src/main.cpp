@@ -1,3 +1,33 @@
+/*
+ * MIT License
+ * 
+ * Copyright (c) 2022 Camille Schreck
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *----------------------------------------------------------------------------
+ * main
+ *----------------------------------------------------------------------------
+ * To test stuff
+ */
+
+
 #include "definitions.hpp"
 #include "InputPoint.hpp"
 #include <iostream>
@@ -86,7 +116,6 @@ int main(int argc, char **argv) {
       if (!file.good()) {
 	std::cout<<"FILE NOT GOOD: -- "<<str<<std::endl;
 	file.close();
-	//      return -1;
       } else {
 	int nb_pts = 0;
 	int nb_max = 0;
@@ -103,7 +132,6 @@ int main(int argc, char **argv) {
 	  if (h < ymin) {
 	    ymin = h;
 	  }
-	  // std::cout<<x<<" "<<h<<std::endl;
 	  ++nb_pts;
 	}
 
@@ -113,7 +141,6 @@ int main(int argc, char **argv) {
 	for (int j = 0; itx !=  x_list.end(); ++itx, ++ith, ++j) {
 	  x_v[nb_pts - 1 - j] = *itx;
 	  h_v[nb_pts - 1 - j] = *ith;
-	  //       std::cout<<j<<" "<<x_v[j]<<" "<<h_v[j]<<std::endl;
 	}
 	if (endx == 0) {
 	  endx = x_v[0];
@@ -122,10 +149,8 @@ int main(int argc, char **argv) {
 	for (int j = span; j < nb_pts - span; ++j) {
 	  float cur = h_v[j];
 	  int k;
-	  //      std::cout<<j<<" "<<cur<<" "<<span<<std::endl;
 	  for (k = 1; k <= span; ++k) {
 	    if (cur <= h_v[j-k] || cur < h_v[j+k]) {
-	      //	std::cout<<"BREAK"<<std::endl;
 	      break;
 	    }
 	  }
@@ -135,12 +160,9 @@ int main(int argc, char **argv) {
 	    ++nb_max;
 	  }
 	}
-	// std::cout<<"NB PTS "<<nb_pts<<" "<<ind<<std::endl;
-	// std::cout<<"NB MAXS "<<nb_max<<" "<<max_x[ind-start].size()<<std::endl;
 	file.close();
       }
     }
-    std::cout<<"FILE WITH MAX "<<m<<" "<<ymax<<std::endl;
     for (int i = start; i < stop; ++i) {
       if (!max_x[i-start].empty()) {
 	max_x[i-start].pop_back();
@@ -149,12 +171,7 @@ int main(int argc, char **argv) {
     }
     
     uint count = 0;
-    //    std::cout<<"nmax BEGN  "<<max_x[0].size()<<" "<<start<<" "<<stop<<std::endl;      
     for (int i = start; i < stop; ++i) {
-      //       std::cout<<"nmax BEGN  "<<i<<" "<<max_x[i-start].size()<<std::endl;      
-      // if (max_x[i-start].empty()) {
-      // 	break;
-      // }
       while (!max_x[i-start].empty()) {
 	float prev = max_x[i-start].front();
 	std::list<float> nmax_x;
@@ -162,8 +179,6 @@ int main(int argc, char **argv) {
 	nmax_x.push_back(prev);
 	nmax_h.push_back(max_h[i-start].front());
 	for (int j = i+1; j < stop; ++j) {
-	  // std::list<float> &curx = max_x[j-start];
-	  // std::list<float> &curh = max_h[j-start];
 	  std::list<float>::iterator itx = max_x[j-start].begin(), ith = max_h[j-start].begin();
 	  for (int k = 0; itx !=  max_x[j-start].end(); ++itx, ++ith, ++k) {
 	    float d = *itx - prev;
@@ -179,14 +194,12 @@ int main(int argc, char **argv) {
 	  prev = *itx;
 	  max_x[j-start].erase(itx);
 	  max_h[j-start].erase(ith);
-	  //  std::cout<<"nmax "<<nmax_x.size()<<" "<<j<<" "<<max_x[j-start].size()<<std::endl;      
 	}
 	maxf_x.push_back(nmax_x);
 	maxf_h.push_back(nmax_h);
 	max_x[i-start].pop_front();
 	max_h[i-start].pop_front();
 	++count;
-	//	std::cout<<"nmax END "<<nmax_x.size()<<" "<<count<<" "<<maxf_x.size()<<" "<<max_x[i-start].size()<<std::endl;      
 
       }
     }

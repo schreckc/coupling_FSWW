@@ -39,13 +39,12 @@ void clear() {
 }
 
 float computeSpectrum() {
-  // std::cout<<"compute spectrum "<<spectrogram.size() <<std::endl;
   FLOAT *in_re = new FLOAT[window_size];
   FLOAT *in_im = new FLOAT[window_size];
 
   std::list<FLOAT>::iterator it;
   uint i = 0;
-  for (it = samples.begin(); /*it != samples.end()*/ i < window_size; ++it, ++i) {
+  for (it = samples.begin(); i < window_size; ++it, ++i) {
     in_re[i] = (*it);
     in_im[i] = 0.0;
   }
@@ -54,7 +53,6 @@ float computeSpectrum() {
   float max = 0;
   int imax = 0;
   for (int k = 0; k < window_size/2; ++k) {
-      //      std::cout<< k*frequency_step<<" "<<k<<std::endl;
      if ((float)k*frequency_step < 0.025) {
        spectrum_re[k] = 0;
        spectrum_im[k] = 0;
@@ -68,23 +66,13 @@ float computeSpectrum() {
     }
 
   }
-  std::cout<<"max "<<imax*frequency_step<<" "<<imax<<" "<<max<<std::endl;
-  // for (i = 0; i < window_size; ++i) {
-  //   in_re[i] = 0.0;
-  //   in_im[i] = 0.0;
-  // }
-  //std::cout<<"inverse FFT "<<std::endl;
+
   FFT(window_size, true, spectrum_re, spectrum_im, in_re, in_im);
   samples.clear();
-  //std::cout<<" win size "<<window_size<<std::endl;
-  
+    
   for (int k = 0; k < window_size; ++k) {
     samples.push_back(in_re[k]);
-    //    samples.pop_back();
   }
-
-  //RealFFT(window_size, in_re, spectrum_re, spectrum_im);
-  //FFT(window_size, true, spectrum_re, spectrum_im, in_re, in_im);
   
   std::vector<FLOAT> power_spectrum(nb_frequencies);
   std::vector<FLOAT> spec_re(nb_frequencies);
@@ -92,25 +80,11 @@ float computeSpectrum() {
   FLOAT epsilon_db = 1e-18;
   for (uint i = 0; i < nb_frequencies; ++i) {
     FLOAT e = powf(spectrum_re[i]/window_size, 2) + powf(spectrum_im[i]/window_size, 2);
-    
     FLOAT e_db = - 10*log10(e+epsilon_db);
     power_spectrum[i] = e;
     spec_re[i] = spectrum_re[i]/window_size;
     spec_im[i] = spectrum_im[i]/window_size;
-    // std::cout<<"s "<<i<<" "<<spectrum_re[i]<<" "<<spectrum_im[i]<<std::endl;
-    // spectrum_re[i] = in_re[i];
-    // spectrum_im[i] = 0;
   }
-  // spectrogram.push_back(power_spectrum);
-  // spectrogram_re.push_back(spec_re);
-  // spectrogram_im.push_back(spec_im);
-  // if (spectrogram.size() > 256) {
-  //   // plotSpectrum();
-  //   // plotSpectrogram();
-  //   // plotSamples();
-  //   //    exit(0);
-  //   spectrogram.pop_front();
-  // }
   
   delete[] in_re;
   delete[] in_im;
@@ -128,7 +102,7 @@ void plotSpectrum(int ind) {
   std::stringstream ss;
   ss <<file_name<<"spectrum_"<<ind<<".txt";
   std::string str(ss.str());
-  //    std::cout<<"Plotting "<<str<<std::endl;
+  std::cout<<"Plotting "<<str<<std::endl;
   std::ofstream  out_file;
   out_file.open(str.c_str());
 
@@ -140,20 +114,6 @@ void plotSpectrum(int ind) {
     out_file << i*frequency_step << " " << e <<"\n";
   }
   out_file.close();
-
-  // std::stringstream ss2;
-  // ss2 <<file_name<<ind<<"_spectrum_imag.txt";
-  // std::string str2(ss2.str());
-  // // std::cout<<str<<std::endl;
-  // std::ofstream  out_file2;
-  // out_file2.open(str2.c_str());
-  
-  // for (uint i = 1; i < nb_frequencies/2; ++i) {
-  //   out_file2 << i*frequency_step << " " << spectrum_re[i]/window_size <<" "<<spectrum_im[i]/window_size <<"\n";
-  // }
-  // out_file2.close();
-
-    
 }
 
 void plotSpectrogram() {
@@ -174,11 +134,9 @@ void plotSpectrogram() {
       float k_cur = pow((2*M_PI*f_cur), 2)/9.81;
       float w_cur = 2*M_PI/k_cur;
       out_file << (float)i*dt<<" "<<j*frequency_step<<" "<<w_cur << " " << (*it)[j]/* <<" "<<(*it_re)[j]<<" "<<(*it_im)[j]*/<<"\n";
-      // std::cout<<(float)i*dt<<" "<<j*frequency_step<<" "<<w_cur << " " << (*it)[j]/* <<" "<<(*it_re)[j]<<" "<<(*it_im)[j]*/<<"\n";
     }
     out_file <<"\n";
   }
-  //    std::cout<<" "<<std::endl;
   out_file.close();
 }
 void plotSamples(int ind) {

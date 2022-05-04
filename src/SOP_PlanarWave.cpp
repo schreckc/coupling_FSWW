@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,39 +62,39 @@ static PRM_Default dirDefaults[] = {PRM_Default(1),
 static PRM_Default phaseDefault((float)M_PI/2.0f);
 
 static PRM_Name names[] = {
-  PRM_Name("amp",    "Amplitude"),
-  PRM_Name("freq",   "Frequency"),
-  PRM_Name("wl",   "WaveLenght"),
-  PRM_Name("use_wl",   "Use Wavelength"),
-  PRM_Name("wavy",   "Wavy"),
-  PRM_Name("clamp",   "Clamp"),
-  PRM_Name("aperiodic",   "Aperiodic"),
-  PRM_Name("sigma",   "Sigma"),
-  PRM_Name("dir",   "Direction"),
-  PRM_Name("use_time",   "Use time"),
-  PRM_Name("phase",   "Phase"),
+			   PRM_Name("amp",    "Amplitude"),
+			   PRM_Name("freq",   "Frequency"),
+			   PRM_Name("wl",   "WaveLenght"),
+			   PRM_Name("use_wl",   "Use Wavelength"),
+			   PRM_Name("wavy",   "Wavy"),
+			   PRM_Name("clamp",   "Clamp"),
+			   PRM_Name("aperiodic",   "Aperiodic"),
+			   PRM_Name("sigma",   "Sigma"),
+			   PRM_Name("dir",   "Direction"),
+			   PRM_Name("use_time",   "Use time"),
+			   PRM_Name("phase",   "Phase"),
 };
 
 PRM_Template SOP_PlanarWave::myTemplateList[] = {
-  PRM_Template(PRM_STRING,    1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
-	       0, 0, SOP_Node::getGroupSelectButton(GA_GROUP_POINT)),
-  PRM_Template(PRM_FLT_J,     1, &names[0], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,     1, &names[1], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,     1, &names[2], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_TOGGLE_J,  1, &names[3]),
-  PRM_Template(PRM_TOGGLE_J,  1, &names[4]),
-  PRM_Template(PRM_TOGGLE_J,  1, &names[5]),
-  PRM_Template(PRM_TOGGLE_J,  1, &names[6]),
-  PRM_Template(PRM_FLT_J,     1, &names[7], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_XYZ_J,     3, &names[8], dirDefaults),
-  PRM_Template(PRM_TOGGLE_J,     1, &names[9], PRMzeroDefaults),
-  PRM_Template(PRM_FLT_J,     1, &names[10], &phaseDefault, 0,
-	       &PRMscaleRange),
-  PRM_Template(),
+						 PRM_Template(PRM_STRING,    1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
+							      0, 0, SOP_Node::getGroupSelectButton(GA_GROUP_POINT)),
+						 PRM_Template(PRM_FLT_J,     1, &names[0], PRMoneDefaults, 0,
+							      &PRMscaleRange),
+						 PRM_Template(PRM_FLT_J,     1, &names[1], PRMoneDefaults, 0,
+							      &PRMscaleRange),
+						 PRM_Template(PRM_FLT_J,     1, &names[2], PRMoneDefaults, 0,
+							      &PRMscaleRange),
+						 PRM_Template(PRM_TOGGLE_J,  1, &names[3]),
+						 PRM_Template(PRM_TOGGLE_J,  1, &names[4]),
+						 PRM_Template(PRM_TOGGLE_J,  1, &names[5]),
+						 PRM_Template(PRM_TOGGLE_J,  1, &names[6]),
+						 PRM_Template(PRM_FLT_J,     1, &names[7], PRMoneDefaults, 0,
+							      &PRMscaleRange),
+						 PRM_Template(PRM_XYZ_J,     3, &names[8], dirDefaults),
+						 PRM_Template(PRM_TOGGLE_J,     1, &names[9], PRMzeroDefaults),
+						 PRM_Template(PRM_FLT_J,     1, &names[10], &phaseDefault, 0,
+							      &PRMscaleRange),
+						 PRM_Template(),
 };
 
 
@@ -137,9 +137,6 @@ OP_ERROR SOP_PlanarWave::cookMySop(OP_Context &context) {
   int fr = context.getFrame();
   float dt = 0.1/3.0;
   t = dt*fr;
-  // if (fr != 0) {
-  //   dt = t/fr;
-  //}
   if (!T()) {
     t = 0;
   }
@@ -151,19 +148,11 @@ OP_ERROR SOP_PlanarWave::cookMySop(OP_Context &context) {
   float ph = PHASE(t);
   UT_Vector3 dir(X(t), Y(t), Z(t));
   dir.normalize();
-
-  //float k = 2*M_PI/wl;
   
   duplicateSource(0, context); //grid
 
   GA_RWHandleV3 Phandle(gdp->findAttribute(GA_ATTRIB_POINT, "P"));
 
-  // GA_Offset ptoff;
-  // GA_FOR_ALL_PTOFF(gdp, ptoff) {
-  //   UT_Vector3 Pvalue = gdp->getPos3(ptoff);
-  //   Pvalue.y() = 0;
-  //   gdp->setPos3(ptoff, Pvalue);
-  // }
   float k, om;
   if (USE_WL(t)) {
     k = 2*M_PI/wl;
@@ -172,23 +161,20 @@ OP_ERROR SOP_PlanarWave::cookMySop(OP_Context &context) {
     om = 2*M_PI*freq;
     k = pow(om/COEF_DISPERSION, 2)/9.81;
   }
-  //  std::cout<<"sigma "<<sigma<<" "<<amp<<std::endl;
+
   GA_Offset ptoff;
   GA_FOR_ALL_PTOFF(gdp, ptoff) {
     UT_Vector3 Pvalue = gdp->getPos3(ptoff);
-    float rx = dot(Pvalue, dir);//Pvalue.x();
+    float rx = dot(Pvalue, dir);
     if (rx > 0 || !CLAMP(t)) {
-      COMPLEX a = amp;//*exp(COMPLEX(0, 1)*k*rx);
+      COMPLEX a = amp;
       if (APERIODIC(t) && -rx > velocity(k, om)*t) {
 	a = 0;
       }
       if (WAVY(t)) {
 	a *= exp(COMPLEX(0, 1)*(k*rx+ph));
       }
-      Pvalue.y() = exp(rx*sigma)*real(a*exp(COMPLEX(0, 1)*(om*(float)t/* - (float)M_PI/2.0f*/)));
-      //  if (ptoff == 2500) {
-      // std::cout<<"Pvalue.y() "<<Pvalue.y()<<std::endl;
-      //  }
+      Pvalue.y() = exp(rx*sigma)*real(a*exp(COMPLEX(0, 1)*(om*(float)t)));
       gdp->setPos3(ptoff, Pvalue);
     }
   }

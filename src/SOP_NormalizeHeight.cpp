@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ OP_ERROR SOP_NormalizeHeight::cookMySop(OP_Context &context) {
     Pvalue.y() -= avg;
     gdp->setPos3(ptoff, Pvalue);
     }}
-  std::cout<<sum<<" "<<avg<<" "<<nbp<<std::endl;
+
   return error();
 }
 

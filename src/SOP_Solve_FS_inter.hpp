@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,7 @@
  *----------------------------------------------------------------------------
  * Solve FS interactive (aperiodic) SOP
  *----------------------------------------------------------------------------
- * Compute amplitude of the obstacle sources (input 0) such that the boundary condition are
- * respected (as well as possible, least square) at the boundary points (input 1) given the
- * incoming waves (input 2).
+ * Compute amplitude of the obstacle sources (input 0) such that the boundary conditions computed at the boundary points (input 1) given the wave parameters (input 2)
  */
 
 
@@ -40,21 +38,21 @@
 
 class SOP_Solve_FS_inter : public SOP_Node {
 public:
-    SOP_Solve_FS_inter(OP_Network *net, const char *name, OP_Operator *op);
-    virtual ~SOP_Solve_FS_inter();
+  SOP_Solve_FS_inter(OP_Network *net, const char *name, OP_Operator *op);
+  virtual ~SOP_Solve_FS_inter();
 
-    static PRM_Template myTemplateList[];
-    static OP_Node *myConstructor(OP_Network*, const char *, OP_Operator *);
-    virtual OP_ERROR             cookInputGroups(OP_Context &context, 
-                                                int alone = 0);
+  static PRM_Template myTemplateList[];
+  static OP_Node *myConstructor(OP_Network*, const char *, OP_Operator *);
+  virtual OP_ERROR             cookInputGroups(OP_Context &context, 
+					       int alone = 0);
 
 protected:
-    virtual OP_ERROR cookMySop(OP_Context &context);
+  virtual OP_ERROR cookMySop(OP_Context &context);
 private:
-    void        getGroups(UT_String &str){ evalString(str, "group", 0, 0); }
+  void        getGroups(UT_String &str){ evalString(str, "group", 0, 0); }
   int        OBS(fpreal t) {return evalInt("obstacle", 0, t);}
 
-    const GA_PointGroup *myGroup;
+  const GA_PointGroup *myGroup;
 
   std::vector<float> wave_lengths;
   std::vector<int> ampli_steps;

@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,7 +102,6 @@ inline COMPLEX fund_solution(FLOAT x) {
 }
 
 inline FLOAT omega(FLOAT k) {
-  // return 1.4*sqrtf(9.81*k);// + 0.074/1000*pow(k, 3));
   return COEF_DISPERSION*sqrtf(9.81*k);// + 0.074/1000*pow(k, 3));
 }
 
@@ -113,7 +112,7 @@ inline FLOAT velocity(FLOAT k) {
   return 0.5*omega(k)/k;
 }
 inline FLOAT velocity(FLOAT k, FLOAT omega) {
-    if (k == 0) {
+  if (k == 0) {
     return 0;
   }
   return 0.5*omega/k;

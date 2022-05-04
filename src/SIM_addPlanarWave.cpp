@@ -23,7 +23,11 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *----------------------------------------------------------------------------
+ * addPlanarWave SIM (!experimental!)
+ *----------------------------------------------------------------------------
+ * change the velocity field according to a planar wave
  */
+
 #include "SIM_addPlanarWave.hpp"
 #include <UT/UT_DSOVersion.h>
 #include <UT/UT_Interrupt.h>
@@ -52,7 +56,7 @@ initializeSIM(void *)
 /// DECLARE_DATAFACTORY and provides an easy way to chain through
 /// the class hierarchy.
 SIM_addPlanarWave::SIM_addPlanarWave(const SIM_DataFactory *factory)
-    : BaseClass(factory)
+  : BaseClass(factory)
 {
 }
 SIM_addPlanarWave::~SIM_addPlanarWave()
@@ -71,7 +75,6 @@ static PRM_Name Aperiodic("aperiodic", "Aperiodic");
 const SIM_DopDescription *
 SIM_addPlanarWave::getDopDescription()
 {
-  //  static PRM_Name theGeometryName(GAS_NAME_GEOMETRY, "Geometry Sources");
   static PRM_Name surfaceFieldName(GAS_NAME_SURFACE, "Surface Field");
   static PRM_Name velocityFieldName(GAS_NAME_VELOCITY, "Velocity Field");
   static PRM_Name velxFieldName("velx", "Velocity X");
@@ -79,83 +82,66 @@ SIM_addPlanarWave::getDopDescription()
   static PRM_Name velzFieldName("velz", "Velocity Z");
 
   static PRM_Template          theTemplates[] = {
-    //  PRM_Template(PRM_STRING, 1, &theGeometryName),
-    PRM_Template(PRM_STRING, 1, &surfaceFieldName),
-    PRM_Template(PRM_STRING, 1, &velocityFieldName),
-    PRM_Template(PRM_STRING, 1, &velxFieldName),
-    PRM_Template(PRM_STRING, 1, &velyFieldName),
-    PRM_Template(PRM_STRING, 1, &velzFieldName),
-    PRM_Template(PRM_FLT, 1, &Frequency),
-    PRM_Template(PRM_FLT, 1, &Amplitude),
-    PRM_Template(PRM_TOGGLE, 1, &Wavy),
-    PRM_Template(PRM_TOGGLE, 1, &Clamp),
-    PRM_Template(PRM_TOGGLE, 1, &Aperiodic),
-    PRM_Template()
-    };
-    static SIM_DopDescription    theDopDescription(
-            true,               // Should we make a DOP?
-            "add_planar",   // Internal name of the DOP.
-            "add Planar Wave",          // Label of the DOP
-            "Solver",           // Default data name
-            classname(),        // The type of this DOP, usually the class.
-            theTemplates);      // Template list for generating the DOP
-    // Make this a microsolver:
-    setGasDescription(theDopDescription);
-    return &theDopDescription;
+						 PRM_Template(PRM_STRING, 1, &surfaceFieldName),
+						 PRM_Template(PRM_STRING, 1, &velocityFieldName),
+						 PRM_Template(PRM_STRING, 1, &velxFieldName),
+						 PRM_Template(PRM_STRING, 1, &velyFieldName),
+						 PRM_Template(PRM_STRING, 1, &velzFieldName),
+						 PRM_Template(PRM_FLT, 1, &Frequency),
+						 PRM_Template(PRM_FLT, 1, &Amplitude),
+						 PRM_Template(PRM_TOGGLE, 1, &Wavy),
+						 PRM_Template(PRM_TOGGLE, 1, &Clamp),
+						 PRM_Template(PRM_TOGGLE, 1, &Aperiodic),
+						 PRM_Template()
+  };
+  static SIM_DopDescription    theDopDescription(
+						 true,               // Should we make a DOP?
+						 "add_planar",   // Internal name of the DOP.
+						 "add Planar Wave",          // Label of the DOP
+						 "Solver",           // Default data name
+						 classname(),        // The type of this DOP, usually the class.
+						 theTemplates);      // Template list for generating the DOP
+  // Make this a microsolver:
+  setGasDescription(theDopDescription);
+  return &theDopDescription;
 }
 bool
 SIM_addPlanarWave::solveGasSubclass(SIM_Engine &engine,
-                        SIM_Object *obj,
-                        SIM_Time time,
-                        SIM_Time timestep)
+				    SIM_Object *obj,
+				    SIM_Time time,
+				    SIM_Time timestep)
 {
-  //    std::cout<<"ADD PLANAR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
-   SIM_VectorField *vel = getVectorField(obj, GAS_NAME_VELOCITY);
-   SIM_VectorField *velx = getVectorField(obj, "velx");
-   SIM_VectorField *vely = getVectorField(obj, "vely");
-   SIM_VectorField *velz = getVectorField(obj, "velz");
-   SIM_ScalarField *surface = getScalarField(obj, GAS_NAME_SURFACE);
-   FLOAT freq = getFreq();
-   FLOAT ampli = getAmpli();
+  SIM_VectorField *vel = getVectorField(obj, GAS_NAME_VELOCITY);
+  SIM_VectorField *velx = getVectorField(obj, "velx");
+  SIM_VectorField *vely = getVectorField(obj, "vely");
+  SIM_VectorField *velz = getVectorField(obj, "velz");
+  SIM_ScalarField *surface = getScalarField(obj, GAS_NAME_SURFACE);
+  FLOAT freq = getFreq();
+  FLOAT ampli = getAmpli();
 
-   if (!velx || !vely || !velz) {
-      addError(obj, SIM_MISSINGDATA,
-	       "velx vely velz", UT_ERROR_MESSAGE);
-      return false;
-   }
-   if (!vel) {
-     addError(obj, SIM_MISSINGDATA,
-	      "vel", UT_ERROR_MESSAGE);
-     return false;
-   }
-   if (!surface) {
-      addError(obj, SIM_MISSINGDATA,
-	       "surface", UT_ERROR_MESSAGE);
-      return false;
-   } 
-   
-    // SIM_GeometryCopy    *geo = 0;
-    // geo = getGeometryCopy(obj, GAS_NAME_GEOMETRY);
-    // if (!geo)
-    //   {
-    // 	std::cout<<"cannot find geo sources"<<std::endl;
-    //     addError(obj, SIM_MISSINGDATA,
-    //              "Sources", UT_ERROR_MESSAGE);
-    //         return false;
-    // }
-
-    // velx->setField(vel->getField(0));
-    // vely->setField(vel->getField(1));
-    // velz->setField(vel->getField(2));
-    addWave(freq, ampli, vel, surface);
-    splitVel(vel, velx, vely, velz);
-    vel->pubHandleModification();
-    velx->pubHandleModification();
-    vely->pubHandleModification();
-    velz->pubHandleModification();
-    ++fr;
-    //  std::cout<<"END ADD FS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  "<<fr<<std::endl;
-     return true;
+  if (!velx || !vely || !velz) {
+    addError(obj, SIM_MISSINGDATA,
+	     "velx vely velz", UT_ERROR_MESSAGE);
+    return false;
+  }
+  if (!vel) {
+    addError(obj, SIM_MISSINGDATA,
+	     "vel", UT_ERROR_MESSAGE);
+    return false;
+  }
+  if (!surface) {
+    addError(obj, SIM_MISSINGDATA,
+	     "surface", UT_ERROR_MESSAGE);
+    return false;
+  } 
+  addWave(freq, ampli, vel, surface);
+  splitVel(vel, velx, vely, velz);
+  vel->pubHandleModification();
+  velx->pubHandleModification();
+  vely->pubHandleModification();
+  velz->pubHandleModification();
+  ++fr;
+  return true;
 }
 
  
@@ -164,97 +150,89 @@ void SIM_addPlanarWave::addWavePartial(float freq,
 				       SIM_VectorField *vel,
 				       SIM_ScalarField *surface,
 				       const UT_JobInfo &info) {
-  // void SOP_Deform_Surface_inter::addContribFromPrimitive(const GU_Detail *fs,
-  // 								GA_Offset prim_off) {
-   UT_Interrupt *boss = UTgetInterrupt();
-   float dt = 0.1/3.0;
-   float t = dt*fr;
-   float om = 2*M_PI*freq/COEF_DISPERSION;
-   float k = om*om/9.81;
-   int i= 0, n;
 
-    UT_VoxelArrayIteratorF vitx;
-    UT_VoxelArrayIteratorF vity;
-    UT_VoxelArrayIteratorF vitz;
-    vitx.setArray(vel->getField(0)->fieldNC());
+  UT_Interrupt *boss = UTgetInterrupt();
+  float dt = 0.1/3.0;
+  float t = dt*fr;
+  float om = 2*M_PI*freq/COEF_DISPERSION;
+  float k = om*om/9.81;
+  int i= 0, n;
 
-    vitx.setCompressOnExit(true);
-    vitx.setPartialRange(info.job(), info.numJobs());
-    UT_Vector3 pos;
-     if (vel->getField(0)->isAligned(vel->getField(1)) && vel->getField(0)->isAligned(vel->getField(2)) ) {
-    //   // std::cout<<"ALIGNED"<<std::endl;
-      for (vitx.rewind(); !vitx.atEnd(); vitx.advance()) {
-        if (vitx.isStartOfTile() && boss->opInterrupt()) {
-          break;
-        }
-        vel->indexToPos(0,vitx.x(), vitx.y(), vitx.z(), pos);
-	float d;
-	float prof =  pos.y() - real(ampli*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f)));//surface->getField()->getCellValue(vitx.x(), vitx.y(), vitx.z());
-        if (prof > 0) {
-     	d = 0;
-        } else {
-     	d = 1;
-        }
-        float rx = pos.x();
-	if (rx < 0 && getClamp()) {
-     	   d = 0;
-	 }
-       
-	COMPLEX hcoef = d*om*exp(k*prof);//*exp(COMPLEX(0, 1)*k*rx);
-	if (getWavy()) {
-	  hcoef *= exp(COMPLEX(0, 1)*k*rx);
-	}
-       //  std::cout<<"hcoef "<<hcoef<<" "<<d<<" "<<om<<" "<<k<<std::endl;
-       //      std::cout<<"pos "<<pos<<std::endl;
-       COMPLEX ax = 0, ay = 0, az = 0;//exp(std::complex<float>(0, 1)*(k*Pvalue.x()));
-       
-  
-       ax += hcoef;
-       az += 0;
-       //  ay += -hcoef*COMPLEX(0, 1);
-       ay += hcoef;
+  UT_VoxelArrayIteratorF vitx;
+  UT_VoxelArrayIteratorF vity;
+  UT_VoxelArrayIteratorF vitz;
+  vitx.setArray(vel->getField(0)->fieldNC());
 
-       if (getAperiodic() && -rx > velocity(k, om)*t) {
-	 ax = 0;
-	 ay = 0;
-	 az = 0;
-       }
-      
-       //   vitx.setValue(real(ampli*ax*exp(-COMPLEX(0, 1)*(om*(float)t))));
-       vel->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
-       				      real(ampli*ax*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f))));
-       vel->getField(1)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
-       				     real(ampli*ay*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f))));
-       vel->getField(2)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
-       				     imag(ampli*az*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f))));
+  vitx.setCompressOnExit(true);
+  vitx.setPartialRange(info.job(), info.numJobs());
+  UT_Vector3 pos;
+  if (vel->getField(0)->isAligned(vel->getField(1)) && vel->getField(0)->isAligned(vel->getField(2)) ) {
+    for (vitx.rewind(); !vitx.atEnd(); vitx.advance()) {
+      if (vitx.isStartOfTile() && boss->opInterrupt()) {
+	break;
       }
-     }
+      vel->indexToPos(0,vitx.x(), vitx.y(), vitx.z(), pos);
+      float d;
+      float prof =  pos.y() - real(ampli*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f)));
+      if (prof > 0) {
+     	d = 0;
+      } else {
+     	d = 1;
+      }
+      float rx = pos.x();
+      if (rx < 0 && getClamp()) {
+	d = 0;
+      }
+       
+      COMPLEX hcoef = d*om*exp(k*prof);
+      if (getWavy()) {
+	hcoef *= exp(COMPLEX(0, 1)*k*rx);
+      }
+      COMPLEX ax = 0, ay = 0, az = 0;
+         
+      ax += hcoef;
+      az += 0;
+      ay += hcoef;
+
+      if (getAperiodic() && -rx > velocity(k, om)*t) {
+	ax = 0;
+	ay = 0;
+	az = 0;
+      }
+      
+      vel->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
+				     real(ampli*ax*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f))));
+      vel->getField(1)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
+       				     real(ampli*ay*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f))));
+      vel->getField(2)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
+       				     imag(ampli*az*exp(COMPLEX(0, 1)*(om*(float)t - (float)M_PI/2.0f))));
+    }
+  }
 }
 
 
 
 void SIM_addPlanarWave::splitVelPartial(SIM_VectorField *vel,
-				SIM_VectorField *velx,
-				SIM_VectorField *vely,
-				SIM_VectorField *velz,
-				const UT_JobInfo &info) {
-  //  std::cout<<"SPLIT"<<std::endl;
+					SIM_VectorField *velx,
+					SIM_VectorField *vely,
+					SIM_VectorField *velz,
+					const UT_JobInfo &info) {
   UT_Interrupt *boss = UTgetInterrupt();
- UT_VoxelArrayIteratorF vitx;
- vitx.setArray(vel->getField(0)->fieldNC());
- vitx.setCompressOnExit(true);
- vitx.setPartialRange(info.job(), info.numJobs());
- UT_Vector3 pos;
- for (vitx.rewind(); !vitx.atEnd(); vitx.advance()) {
-   if (vitx.isStartOfTile() && boss->opInterrupt()) {
-     break;
-   }
-   velx->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
-   				  vel->getField(0)->getCellValue(vitx.x(), vitx.y(), vitx.z()));
-   vely->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
-   				  vel->getField(1)->getCellValue(vitx.x(), vitx.y(), vitx.z()));
-   velz->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
-   				  vel->getField(2)->getCellValue(vitx.x(), vitx.y(), vitx.z()));
- }
+  UT_VoxelArrayIteratorF vitx;
+  vitx.setArray(vel->getField(0)->fieldNC());
+  vitx.setCompressOnExit(true);
+  vitx.setPartialRange(info.job(), info.numJobs());
+  UT_Vector3 pos;
+  for (vitx.rewind(); !vitx.atEnd(); vitx.advance()) {
+    if (vitx.isStartOfTile() && boss->opInterrupt()) {
+      break;
+    }
+    velx->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
+				    vel->getField(0)->getCellValue(vitx.x(), vitx.y(), vitx.z()));
+    vely->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
+				    vel->getField(1)->getCellValue(vitx.x(), vitx.y(), vitx.z()));
+    velz->getField(0)->setCellValue(vitx.x(), vitx.y(), vitx.z(),
+				    vel->getField(2)->getCellValue(vitx.x(), vitx.y(), vitx.z()));
+  }
 }
    

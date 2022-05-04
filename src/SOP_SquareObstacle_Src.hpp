@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +25,10 @@
  * Square Obstacle SOP
  *---------------------------------------------------------------------------
  * Create set of point sources along an offset surface of the obstacle.
- * Range of wavelength (and time step per wl), and is copied from input geometry, as well as
- *    the detail attibute.
- * Create on primitve and subset of sources for each wl.
+ * Need the waveParameters in entry.
+ * Create a subset of sources for each wl.
  * Spacing depends on the wavelength and the parameter "density".
- * I use this node also to create a set of point sampling the border of the obstacle (offset=0)
- *    for the boundary conditions.
- * Note: the density of the boundary points should be at least twice the density of the
- *    sources.
- * Note 2: for the aperiodic version, do not forget to check the "interactive sources" box in
- *   the parameter of the node creating the sources of the obstacle.
+ * Note: the number of boundary points should be at least twice the number of points for the biggest subset of sources (the one corresponding to the smallest wavelength).
  */
 
 

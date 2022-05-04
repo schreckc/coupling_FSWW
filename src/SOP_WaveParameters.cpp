@@ -24,13 +24,14 @@
  *----------------------------------------------------------------------------
  * WaveParameters SOP
  *----------------------------------------------------------------------------
- * create one source that can be used as input.
+ * Define the parameters of the sources
  * Parameters:
- *    -Position (X, Y, Z): position of the source (X, Z: coordintate on the water surface, Y=0)
- *    -Amplitude
- *    -Phase
- *    -Minimum/maximum wavelength, wavelength multiplicative step: used to compute the range of wl
- *    -Type (not used yet, keep at 0)
+ *    -Amplitude: multiply the amplitude of every sources by this number
+ *    If defined by spectrum:
+ *        - use the wavelengths obtained by doing an FFT on a time window of size <window size> (time step 0.3) using the dispertion relationship defined in definition.hpp. The parameters shiftB and shiftU remove respectively the <shifb> smaller wavelength and <shiftu> bigger ones.
+ *   If not defined by spectrum  
+ *        -Minimum/maximum wavelength, wavelength multiplicative step: used to compute the range of wl as a geometric sequence
+ *    -Interactive sources
  *    -Size of the buffer: size of the buffer recording past amplitude
  *    -Damping
  */
@@ -62,49 +63,49 @@ void newSopOperator(OP_OperatorTable *table) {
 				     OP_FLAG_GENERATOR));
 }
 static PRM_Name names[] = {
-  PRM_Name("amp",     "Amplitude"),
+			   PRM_Name("amp",     "Amplitude"),
 
-  PRM_Name("spectrum_def", "Defined by spectrum"),
+			   PRM_Name("spectrum_def", "Defined by spectrum"),
 
-  PRM_Name("wl_min",  "Minimum Wavelength"),
-  PRM_Name("wl_max",  "Maximum Wavelength"),
-  PRM_Name("wl_step",  "Wavelength Multiplicative Step"),
+			   PRM_Name("wl_min",  "Minimum Wavelength"),
+			   PRM_Name("wl_max",  "Maximum Wavelength"),
+			   PRM_Name("wl_step",  "Wavelength Multiplicative Step"),
 
-  PRM_Name("win_size",   "Window Size"),
-  PRM_Name("shift_b",   "Shift B"),
-  PRM_Name("shift_u",   "Shift U"),
+			   PRM_Name("win_size",   "Window Size"),
+			   PRM_Name("shift_b",   "Shift B"),
+			   PRM_Name("shift_u",   "Shift U"),
 
-  PRM_Name("inter_src",   "Interactive sources"),
-  PRM_Name("buffer_size",   "Size of the buffer containing past amplitudes"),
+			   PRM_Name("inter_src",   "Interactive sources"),
+			   PRM_Name("buffer_size",   "Size of the buffer containing past amplitudes"),
 
-  PRM_Name("damping",   "Damping"),
-  PRM_Name("dt_",     "Time Step"),
+			   PRM_Name("damping",   "Damping"),
+			   PRM_Name("dt_",     "Time Step"),
 };
 
 PRM_Template
 SOP_WaveParameters::myTemplateList[] = {
-  PRM_Template(PRM_STRING,    1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
-	       0, 0, SOP_Node::getGroupSelectButton(GA_GROUP_POINT)),
-  PRM_Template(PRM_FLT_J,     1, &names[0], PRMoneDefaults, 0, //ampli
-	       &PRMscaleRange),
+					PRM_Template(PRM_STRING,    1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
+						     0, 0, SOP_Node::getGroupSelectButton(GA_GROUP_POINT)),
+					PRM_Template(PRM_FLT_J,     1, &names[0], PRMoneDefaults, 0, //ampli
+						     &PRMscaleRange),
   
-  PRM_Template(PRM_TOGGLE_E,  1, &names[1]), //spectrum def
+					PRM_Template(PRM_TOGGLE_E,  1, &names[1]), //spectrum def
   
-  PRM_Template(PRM_FLT_E,     1, &names[2], PRMoneDefaults), //min wl
-  PRM_Template(PRM_FLT_E,     1, &names[3], PRMoneDefaults), //max wl
-  PRM_Template(PRM_FLT_E,     1, &names[4], PRMoneDefaults), //step wl
+					PRM_Template(PRM_FLT_E,     1, &names[2], PRMoneDefaults), //min wl
+					PRM_Template(PRM_FLT_E,     1, &names[3], PRMoneDefaults), //max wl
+					PRM_Template(PRM_FLT_E,     1, &names[4], PRMoneDefaults), //step wl
 
-  PRM_Template(PRM_INT_E,  1, &names[5], new PRM_Default(256)), //win size
-  PRM_Template(PRM_INT_E,  1, &names[6], new PRM_Default(124)), //shift b
-  PRM_Template(PRM_INT_E,  1, &names[7], new PRM_Default(2)), //shift u
+					PRM_Template(PRM_INT_E,  1, &names[5], new PRM_Default(256)), //win size
+					PRM_Template(PRM_INT_E,  1, &names[6], new PRM_Default(124)), //shift b
+					PRM_Template(PRM_INT_E,  1, &names[7], new PRM_Default(2)), //shift u
 
-  PRM_Template(PRM_TOGGLE_E,  1, &names[8]), //interactive src
-  PRM_Template(PRM_INT_J,     1, &names[9], new PRM_Default(500)), //buffer size
+					PRM_Template(PRM_TOGGLE_E,  1, &names[8]), //interactive src
+					PRM_Template(PRM_INT_J,     1, &names[9], new PRM_Default(500)), //buffer size
   
-  PRM_Template(PRM_FLT_J,     1, &names[10], PRMzeroDefaults), //damping
-  PRM_Template(PRM_FLT_E,     1, &names[11], new PRM_Default(0.03)), //time step
+					PRM_Template(PRM_FLT_J,     1, &names[10], PRMzeroDefaults), //damping
+					PRM_Template(PRM_FLT_E,     1, &names[11], new PRM_Default(0.03)), //time step
 
-  PRM_Template(),
+					PRM_Template(),
 };
 
 
@@ -138,10 +139,10 @@ SOP_WaveParameters::cookInputGroups(OP_Context &context, int alone)
 
 
 OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
-     OP_AutoLockInputs inputs(this);
-    if (inputs.lock(context) >= UT_ERROR_ABORT)
-      return error();
-    flags().setTimeDep(0);
+  OP_AutoLockInputs inputs(this);
+  if (inputs.lock(context) >= UT_ERROR_ABORT)
+    return error();
+  flags().setTimeDep(0);
 
   float t = context.getTime();
   int fr = context.getFrame();
@@ -221,7 +222,7 @@ OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
       nb_wl = 1;
       shift_u = 0;
     }
-        // Compute the range of wavelength we want to use between WL_MIN and WL_MAX(t)
+    // Compute the range of wavelength we want to use between WL_MIN and WL_MAX(t)
     // Note: multiplicative step between wl
     wave_lengths = std::vector<float>(winsize);
     float f_cur = f_min;
@@ -237,7 +238,7 @@ OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
     // compute the number of time step between updates for each wavelength
     ampli_steps = std::vector<int>(winsize);
     float wl = wave_lengths[winsize - nb_wl - 1];
-    FLOAT period = 0.125*wl/velocity(2*M_PI/wl); // TEST 0.25 instead of 0.5
+    FLOAT period = 0.125*wl/velocity(2*M_PI/wl); 
     int d_period = period/(dt_);
 
     std::cout<<"nb wl "<<nb_wl<<" " <<winsize - nb_wl - 1<<std::endl;
@@ -251,7 +252,7 @@ OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
       if (wl == 0) { // TEST get wl 0
 	wl = wave_lengths[w+1];
       }
-      period = 0.125*wl/velocity(2*M_PI/wl); // TEST 0.25 instead of 0.5
+      period = 0.125*wl/velocity(2*M_PI/wl); 
       d_period = period/(dt_*ampli_steps[winsize - nb_wl - 1]);
       if (d_period == 0) {
 	ampli_steps[w] = 1;
@@ -261,6 +262,7 @@ OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
     }
 
   }
+  
   // begin creation of geometry
   gdp->clearAndDestroy();
   // creation of the primitive (one per wl), and link one source to each
@@ -290,21 +292,21 @@ OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
   GA_Offset lcl_start, lcl_end;
   int w = 0;
   if (SPECTRUM_DEF()) {
-  for (GA_Iterator lcl_it((gdp)->getPrimitiveRange()); lcl_it.blockAdvance(lcl_start, lcl_end); ) {
-    for (prim_off = lcl_start; prim_off < lcl_end; ++prim_off) {
+    for (GA_Iterator lcl_it((gdp)->getPrimitiveRange()); lcl_it.blockAdvance(lcl_start, lcl_end); ) {
+      for (prim_off = lcl_start; prim_off < lcl_end; ++prim_off) {
 	wl_attrib.set(prim_off, wave_lengths[w+SHIFT_U()]);
 	as_attrib.set(prim_off, ampli_steps[w+SHIFT_U()]);
-      ++w;
+	++w;
+      }
     }
-  }
   } else {
-  for (GA_Iterator lcl_it((gdp)->getPrimitiveRange()); lcl_it.blockAdvance(lcl_start, lcl_end); ) {
-    for (prim_off = lcl_start; prim_off < lcl_end; ++prim_off) {
-      wl_attrib.set(prim_off, wave_lengths[w]);
-      as_attrib.set(prim_off, ampli_steps[w]);
-      ++w;
+    for (GA_Iterator lcl_it((gdp)->getPrimitiveRange()); lcl_it.blockAdvance(lcl_start, lcl_end); ) {
+      for (prim_off = lcl_start; prim_off < lcl_end; ++prim_off) {
+	wl_attrib.set(prim_off, wave_lengths[w]);
+	as_attrib.set(prim_off, ampli_steps[w]);
+	++w;
+      }
     }
-  }
   }
 
   // creation of the detail attibutes
@@ -351,15 +353,15 @@ OP_ERROR SOP_WaveParameters::cookMySop(OP_Context &context) {
     addError(SOP_MESSAGE, "Failed to create attribute time_step");
     return error();
   }
-   if (!w_attrib.isValid()) {
+  if (!w_attrib.isValid()) {
     w_attrib = GA_RWHandleI(gdp->addIntTuple(GA_ATTRIB_DETAIL, "winsize", 1));
   }
-   if (!sb_attrib.isValid()) {
-     sb_attrib = GA_RWHandleI(gdp->addIntTuple(GA_ATTRIB_DETAIL, "shift_b", 1));
-   }
-   if (!su_attrib.isValid()) {
-     su_attrib = GA_RWHandleI(gdp->addIntTuple(GA_ATTRIB_DETAIL, "shift_u", 1));
-   }
+  if (!sb_attrib.isValid()) {
+    sb_attrib = GA_RWHandleI(gdp->addIntTuple(GA_ATTRIB_DETAIL, "shift_b", 1));
+  }
+  if (!su_attrib.isValid()) {
+    su_attrib = GA_RWHandleI(gdp->addIntTuple(GA_ATTRIB_DETAIL, "shift_u", 1));
+  }
    
   // setting detail attibutes
   bs_attrib.set(0,buffer_size);

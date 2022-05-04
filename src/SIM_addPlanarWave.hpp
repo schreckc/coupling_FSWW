@@ -23,6 +23,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *----------------------------------------------------------------------------
+ * addPlanarWave SIM (!experimental!)
+ *----------------------------------------------------------------------------
+ * change the velocity field according to a planar wave
  */
 #ifndef ADD_FS_HPP
 #define ADD_FS_HPP

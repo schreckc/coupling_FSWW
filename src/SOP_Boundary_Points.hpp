@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  *----------------------------------------------------------------------------
  * Boundary_Points SOP
  *----------------------------------------------------------------------------
+ * Record the height at the position of the boundary points (input 0) to compute the amplitude of each frequency component using the wave parameters (input 1).
  */
 
 
@@ -51,15 +52,10 @@ protected:
   virtual OP_ERROR cookMySop(OP_Context &context);
 private:
   void        getGroups(UT_String &str){ evalString(str, "group", 0, 0); }
-  // fpreal      DT(fpreal t)             { return evalFloat("dt_", 0, t); }
-  // int         WIN_SIZE(fpreal t) {return evalInt("win_size", 0, t);}
-  // int         SHIFT_B(fpreal t) {return evalInt("shift_b", 0, t);}
-  // int         SHIFT_U(fpreal t) {return evalInt("shift_u", 0, t);}
   
   std::list<InputPoint> inputPoints;
   std::vector<float> wave_lengths;
   std::vector<int> ampli_steps;
-  //  InputPoint *middle;
   int nb_pts;
   
   const GA_PointGroup *myGroup;

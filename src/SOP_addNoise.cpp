@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
  * add noise SOP
  *----------------------------------------------------------------------------
  */
+
 #include "SOP_addNoise.hpp"
 
 #include <GU/GU_Detail.h>
@@ -52,42 +53,42 @@ void newSopOperator(OP_OperatorTable *table) {
 }
 
 static PRM_Name names[] = {
-  PRM_Name("amp",         "Amplitude"),
-  PRM_Name("dt_",         "Time Step"),
-  PRM_Name("win_size",    "Window Size"),
-  PRM_Name("shift_b",     "Shift B"),
-  PRM_Name("shift_u",     "Shift U"),
-  PRM_Name("ang_speed",   "Angular Speed"),
-  PRM_Name("freq",        "Frequency"),
-  PRM_Name("lacunarity",  "Lacunarity"),
-  PRM_Name("persistence", "Persistence"),
-  PRM_Name("ampli",       "Ampli Perlin"),
-  PRM_Name("octave",      "Octave")
+			   PRM_Name("amp",         "Amplitude"),
+			   PRM_Name("dt_",         "Time Step"),
+			   PRM_Name("win_size",    "Window Size"),
+			   PRM_Name("shift_b",     "Shift B"),
+			   PRM_Name("shift_u",     "Shift U"),
+			   PRM_Name("ang_speed",   "Angular Speed"),
+			   PRM_Name("freq",        "Frequency"),
+			   PRM_Name("lacunarity",  "Lacunarity"),
+			   PRM_Name("persistence", "Persistence"),
+			   PRM_Name("ampli",       "Ampli Perlin"),
+			   PRM_Name("octave",      "Octave")
 };
 
 PRM_Template
 SOP_addNoise::myTemplateList[] = {
-  PRM_Template(PRM_STRING, 1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
-	       0, 0, SOP_Node::getGroupSelectButton(GA_GROUP_POINT)),
-  PRM_Template(PRM_FLT_J,  1, &names[0], new PRM_Default(0.01), 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,  1, &names[1], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_INT_J,  1, &names[2], new PRM_Default(256)),
-  PRM_Template(PRM_INT_J,  1, &names[3], new PRM_Default(124)),
-  PRM_Template(PRM_INT_J,  1, &names[4], new PRM_Default(2)),
-  PRM_Template(PRM_FLT_J,  1, &names[5], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,  1, &names[6], new PRM_Default(1), 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,  1, &names[7], new PRM_Default(2), 0,
-  	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,  1, &names[8], new PRM_Default(0.5), 0,
-  	       &PRMscaleRange),
-  PRM_Template(PRM_FLT_J,  1, &names[9], new PRM_Default(1), 0,
-  	       &PRMscaleRange),
-  PRM_Template(PRM_INT_J,  1, &names[10], new PRM_Default(1)),
-  PRM_Template(),
+				  PRM_Template(PRM_STRING, 1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
+					       0, 0, SOP_Node::getGroupSelectButton(GA_GROUP_POINT)),
+				  PRM_Template(PRM_FLT_J,  1, &names[0], new PRM_Default(0.01), 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_FLT_J,  1, &names[1], PRMoneDefaults, 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_INT_J,  1, &names[2], new PRM_Default(256)),
+				  PRM_Template(PRM_INT_J,  1, &names[3], new PRM_Default(124)),
+				  PRM_Template(PRM_INT_J,  1, &names[4], new PRM_Default(2)),
+				  PRM_Template(PRM_FLT_J,  1, &names[5], PRMoneDefaults, 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_FLT_J,  1, &names[6], new PRM_Default(1), 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_FLT_J,  1, &names[7], new PRM_Default(2), 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_FLT_J,  1, &names[8], new PRM_Default(0.5), 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_FLT_J,  1, &names[9], new PRM_Default(1), 0,
+					       &PRMscaleRange),
+				  PRM_Template(PRM_INT_J,  1, &names[10], new PRM_Default(1)),
+				  PRM_Template(),
 };
 
 
@@ -99,8 +100,6 @@ OP_Node *SOP_addNoise::myConstructor(OP_Network *net, const char *name, OP_Opera
 SOP_addNoise::SOP_addNoise(OP_Network *net, const char *name, OP_Operator *op)
   : SOP_Node(net, name, op) {
   mySopFlags.setManagesDataIDs(true);
-  //  sn = SimplexNoise(FREQ(1), AMPLI(1), LACUNARITY(1), PERSISTENCE(1));
-    
 }
 
 SOP_addNoise::~SOP_addNoise() {
@@ -121,11 +120,11 @@ SOP_addNoise::cookInputGroups(OP_Context &context, int alone) {
 
 
 OP_ERROR SOP_addNoise::cookMySop(OP_Context &context) {
-   OP_AutoLockInputs inputs(this);
-   if (inputs.lock(context) >= UT_ERROR_ABORT)
-     return error();
+  OP_AutoLockInputs inputs(this);
+  if (inputs.lock(context) >= UT_ERROR_ABORT)
+    return error();
     
-   flags().setTimeDep(1);
+  flags().setTimeDep(1);
   float t = context.getTime();
   int fr = context.getFrame();
   float dt_ = 0.1/3.0;
@@ -140,98 +139,65 @@ OP_ERROR SOP_addNoise::cookMySop(OP_Context &context) {
   duplicateSource(0, context); //grid
   GA_RWHandleV3 Phandle(gdp->findAttribute(GA_ATTRIB_POINT, "P"));
 
-  if (/*fr <= 1*/ true) {
-    float sample_rate = 1.0/(dt_);
-    float freq_step = 1.0/(winsize*dt_);
+  float sample_rate = 1.0/(dt_);
+  float freq_step = 1.0/(winsize*dt_);
 
-    float f_min = freq_step;
-    float f_max = sample_rate;
-    float k_min = pow((2*M_PI*f_min), 2)/9.81;
-    float k_max = pow((2*M_PI*f_max), 2)/9.81;
-    float w_min = 2*M_PI/k_max;
-    float w_max = 2*M_PI/k_min;
-    std::cout<<"wl min-max noise"<<w_min<<" - "<<w_max<<std::endl;
-    std::cout<<"freq min-max noise"<<f_min<<" - "<<f_max<<std::endl;
+  float f_min = freq_step;
+  float f_max = sample_rate;
+  float k_min = pow((2*M_PI*f_min), 2)/9.81;
+  float k_max = pow((2*M_PI*f_max), 2)/9.81;
+  float w_min = 2*M_PI/k_max;
+  float w_max = 2*M_PI/k_min;
     
-    int nb_wl = winsize/2;
-    nb_wl -= shift_b + shift_u;
-    if (nb_wl <= 0) {
-      nb_wl = 1;
-      shift_u = 0;
-    }
+  int nb_wl = winsize/2;
+  nb_wl -= shift_b + shift_u;
+  if (nb_wl <= 0) {
+    nb_wl = 1;
+    shift_u = 0;
+  }
   
-    // Compute the range of wavelength we want to use between WL_MIN and WL_MAX(t)
-    // Note: multiplicative step between wl
-    wave_lengths = std::vector<float>(winsize);
-    float f_cur = f_min;
-    for (int i = 0; i < winsize; ++i) {
-      float k_cur = pow((2*M_PI*f_cur), 2)/9.81;
-      float w_cur = 2*M_PI/k_cur;
-      wave_lengths[/*winsize - 1 - */i] = w_cur;
-      f_cur += freq_step;
-      // std::cout<<i<<" "<<wave_lengths[i]<<std::endl;
-    }
-    std::cout<<"NB WL "<<nb_wl<<std::endl;
-    GA_RWHandleF wl_attrib(gdp->findFloatTuple(GA_ATTRIB_DETAIL, "wavelength", nb_wl));
-    if (!wl_attrib.isValid()) {
-      wl_attrib = GA_RWHandleF(gdp->addFloatTuple(GA_ATTRIB_DETAIL, "wavelength", nb_wl));
-    }
-    if (!wl_attrib.isValid()) {
-      addError(SOP_MESSAGE, "Failed to create attribute wavelength");
-      return error();
-    }
-    for (int w = 0; w < nb_wl; ++w) {
-      wl_attrib.set(0, w, wave_lengths[w+shift_u]);
-      //   gdp->appendPrimitive(GA_PRIMPOLY);
-    }
-    
+  wave_lengths = std::vector<float>(winsize);
+  float f_cur = f_min;
+  for (int i = 0; i < winsize; ++i) {
+    float k_cur = pow((2*M_PI*f_cur), 2)/9.81;
+    float w_cur = 2*M_PI/k_cur;
+    wave_lengths[/*winsize - 1 - */i] = w_cur;
+    f_cur += freq_step;
+  }
   
-  //   // setting primitive attibutes
-  //   uint w = 0;
-  //  GA_Range range_i = gdp->getPrimitiveRange();
-    //    std::cout<<"prim range "<<range_i.getEntries()<<std::endl;
-  //   for(GA_Iterator itp = range_i.begin(); itp != range_i.end(); ++itp, ++w) {
-  //     wl_attrib.set(*itp, wave_lengths[w+shift_u]);
-  //   }
+  GA_RWHandleF wl_attrib(gdp->findFloatTuple(GA_ATTRIB_DETAIL, "wavelength", nb_wl));
+  if (!wl_attrib.isValid()) {
+    wl_attrib = GA_RWHandleF(gdp->addFloatTuple(GA_ATTRIB_DETAIL, "wavelength", nb_wl));
+  }
+  if (!wl_attrib.isValid()) {
+    addError(SOP_MESSAGE, "Failed to create attribute wavelength");
+    return error();
+  }
+  for (int w = 0; w < nb_wl; ++w) {
+    wl_attrib.set(0, w, wave_lengths[w+shift_u]);
 
   }
     
-   // if (fr == 1) {
-   //   sn = SimplexNoise(FREQ(1), AMPLI(1), LACUNARITY(1), PERSISTENCE(1));
-   // }
+  
   std::vector<float>::iterator itw;
   srand(0);
   SimplexNoise sn(FREQ(t), AMPLI(t), LACUNARITY(t), PERSISTENCE(t));
-    {
-      GA_Offset ptoff;
-      GA_FOR_ALL_PTOFF(gdp, ptoff) {
-	UT_Vector3 Pvalue = gdp->getPos3(ptoff);
+  {
+    GA_Offset ptoff;
+    GA_FOR_ALL_PTOFF(gdp, ptoff) {
+      UT_Vector3 Pvalue = gdp->getPos3(ptoff);
 	
-      // for (itw = wave_lengths.begin(); itw != wave_lengths.end(); ++itw) {
-      // 	float wl = (*itw);//w_handle.get(prim_off);
-      // 	float k = M_PI*2.0/wl;
-      // 	float om = ang_speed*omega(k);
-      // 	float ar = (FLOAT)rand()/(FLOAT)(RAND_MAX) - 0.5, ai = (FLOAT)rand()/(FLOAT)(RAND_MAX) - 0.5;
-      // 	float d = sqrt(ar*ar + ai*ai);
-      // 	ar /= d;
-      // 	ai /= d;
-      // 	std::complex<float> a(ar, ai);
-      // 	//	std::cout<<"a "<<a<<"   w "<<wl<<std::endl;
-      // 	Pvalue.y() += real(amp*a*exp(-COMPLEX(0, 1)*(om*(float)t)));
-      // 	gdp->setPos3(ptoff, Pvalue);
-      // }
-	FLOAT perl_r = sn.fractal(OCTAVE(t), Pvalue.x(), Pvalue.z());
-	FLOAT perl_i = sn.fractal(OCTAVE(t), Pvalue.z(), Pvalue.x());
-	COMPLEX perl(perl_r, perl_i);
-		//std::cout<<perl<<" ";
-	float om = ang_speed;
-	Pvalue.y() += amp*real(perl*exp(-COMPLEX(0, 1)*(om*(float)t)));
-	gdp->setPos3(ptoff, Pvalue);
-      }
-      // std::cout<<"perlin "<<FREQ(t)<<" "<< AMP(t)<<" "<< LACUNARITY(t)<<" "<< PERSISTENCE(t) <<"\n";
+      FLOAT perl_r = sn.fractal(OCTAVE(t), Pvalue.x(), Pvalue.z());
+      FLOAT perl_i = sn.fractal(OCTAVE(t), Pvalue.z(), Pvalue.x());
+      COMPLEX perl(perl_r, perl_i);
 
+      float om = ang_speed;
+      Pvalue.y() += amp*real(perl*exp(-COMPLEX(0, 1)*(om*(float)t)));
+      gdp->setPos3(ptoff, Pvalue);
     }
-   Phandle.bumpDataId();
+
+  }
+  Phandle.bumpDataId();
   return error();
 }
 

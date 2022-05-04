@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,19 +55,19 @@ void newSopOperator(OP_OperatorTable *table) {
 }
 
 static PRM_Name names[] = {
-  PRM_Name("amp",     "Amplitude"),
-  PRM_Name("parallel", "Parallel")
+			   PRM_Name("amp",     "Amplitude"),
+			   PRM_Name("parallel", "Parallel")
 };
 
 PRM_Template
 SOP_Deform_Surface_inter::myTemplateList[] = {
-  PRM_Template(PRM_STRING,    1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
-	       0, 0, SOP_Node::getGroupSelectButton(
-						    GA_GROUP_POINT)),
-  PRM_Template(PRM_FLT_J,     1, &names[0], PRMoneDefaults, 0,
-	       &PRMscaleRange),
-  PRM_Template(PRM_TOGGLE_J,  1, &names[1]),
-  PRM_Template(),
+					      PRM_Template(PRM_STRING,    1, &PRMgroupName, 0, &SOP_Node::pointGroupMenu,
+							   0, 0, SOP_Node::getGroupSelectButton(
+												GA_GROUP_POINT)),
+					      PRM_Template(PRM_FLT_J,     1, &names[0], PRMoneDefaults, 0,
+							   &PRMscaleRange),
+					      PRM_Template(PRM_TOGGLE_J,  1, &names[1]),
+					      PRM_Template(),
 };
 
 
@@ -98,7 +98,7 @@ SOP_Deform_Surface_inter::cookInputGroups(OP_Context &context, int alone) {
 			      0);
 }
 
-
+// For parallel computing on CPU
 void SOP_Deform_Surface_inter::addContribFromPrimitivePartial(const GU_Detail *fs,
  							      GA_Offset prim_off,
  							      const UT_JobInfo &info) {
@@ -114,19 +114,16 @@ void SOP_Deform_Surface_inter::addContribFromPrimitivePartial(const GU_Detail *f
   if (!w_handle.isValid()) {
     addError(SOP_ATTRIBUTE_INVALID, "wavelengths...!");
     return;
-    //  return error();
   }
   if (!as_handle.isValid()) {
     addError(SOP_ATTRIBUTE_INVALID, "ampli_steps");
     return;
-    // return error();
   }
   float wl = w_handle.get(prim_off);
-  //  std::cout<<"WL  "<<wl<<std::endl;
   int as = as_handle.get(prim_off);
   float k = M_PI*2.0/wl;
   float om = omega(k);
-  if (wl == 0) {// TEST get wl 0
+  if (wl == 0) {
     k = 0;
     om = 0;
   }
@@ -136,31 +133,22 @@ void SOP_Deform_Surface_inter::addContribFromPrimitivePartial(const GU_Detail *f
   GA_Offset ptoff;
   GA_Range range_grid = gdp->getPointRange();
   int i= 0, n;
-  //GA_Iterator itgr = range_grid.begin();
-  //for(GA_Iterator itgr = range_grid.begin(); itgr != range_grid.end(); ++itgr) {
+
   for (info.divideWork(n_grid, i, n); i < n; i++) {
     ptoff = gdp->pointOffset(i);
-    // std::cout<<"i "<<i<<" "<<amp<<" "<<as<<" "<<k<<" "<<om<<std::endl;
-    //  	GA_FOR_ALL_PTOFF(gdp, ptoff) {
     UT_Vector3 Pvalue = gdp->getPos3(ptoff);
-    //std::cout<<"Pval "<<Pvalue<<std::endl;
-    COMPLEX a = 0;//exp(std::complex<float>(0, 1)*(k*Pvalue.x()));
+    COMPLEX a = 0;
     for(GA_Iterator it = range.begin(); it != range.end(); ++it) {
       UT_Vector3 P_fs = fs->getPos3((*it));
       float r = sqrt(pow(Pvalue.x() - P_fs.x(), 2) + pow(Pvalue.z() - P_fs.z(), 2));
-      float v = velocity(k, om);//0.5*omega/k;
+      float v = velocity(k, om);
       float ar = 0, ai = 0;
       float arn = 0, ain = 0;
-      //  float arn = 0, ain = 0;
 	    
       fpreal t_ret = t - r/v;
       OP_Context c_ret(t_ret);
-      // float ret = t_ret/dt;
-      // int f_ret = floor(ret) - 1;
       int f_ret = floor(t_ret/(dt)) - 1;
       float coef = t_ret/(dt) - floor(t_ret/(dt));
-      // float q =  ret - f_ret;
-      //	    std::cout<<"q  "<<q<<std::endl;
       f_ret = floor((float)f_ret/(float)as); 
       if (t_ret < 0) {
 	--f_ret;
@@ -173,29 +161,15 @@ void SOP_Deform_Surface_inter::addContribFromPrimitivePartial(const GU_Detail *f
 	tuple->get(afs, *it, arn, 2*f_ret+2);
 	tuple->get(afs, *it, ain, 2*f_ret+3);
       }
-      // if (itgr == range_grid.begin()) {
-      //   std::cout<<"Pval "<<Pvalue<<std::endl;
-      //   std::cout<<"P_fs "<<P_fs<<" "<<t<<" "<<r<<" "<<t_ret<<" "<<f_ret<<std::endl;
-      // }
 
-      // if (f_ret >= 0) {
-      //   afs = fs->findFloatTuple(GA_ATTRIB_POINT, "ampli", buffer_size);
-      //   tuple = afs->getAIFTuple();
-      //   tuple->get(afs, *it, arn, 2*f_ret);
-      //   tuple->get(afs, *it, ain, 2*f_ret+1);
-      // }
       std::complex<float> ampli((1-coef)*ar + coef*arn, (1-coef)*ai + coef*ain);
-      //	    std::complex<float> amplin(arn, ain);
       a += ampli*fund_solution(k*r)*damping(damping_coef, r, k);
     }
-    // if (real(a) != 0 || imag(a) != 0) {
-    //    std::cout<<"i "<<i<<" "<<a<<std::endl;
-    //  }
     Pvalue.y() += real(amp*a*exp(-COMPLEX(0, 1)*(om*(float)t)));
-    {UT_AutoJobInfoLock alock(info);
+    {
+      UT_AutoJobInfoLock alock(info);
       gdp->setPos3(ptoff, Pvalue);
     }
-    //    ++itgr;
 
   }
 }
@@ -208,16 +182,11 @@ OP_ERROR SOP_Deform_Surface_inter::cookMySop(OP_Context &context) {
     
   flags().setTimeDep(1);
   float t = context.getTime();
-  // int
+
   fr = context.getFrame();
   float dt = 0.1/3.0;
   t = dt*fr;
 
-  // if (fr == 1) {
-  //   _cuda_surface = CudaWaterSurface();
-  //   // _cuda_surface.init(1);
-  //   _cuda_surface.clear();
-  // }
   time.tick(Times::deform_time_);
   float amp = AMP(t);
   int nb_inputs = getInputsArraySize();
@@ -243,7 +212,6 @@ OP_ERROR SOP_Deform_Surface_inter::cookMySop(OP_Context &context) {
       addWarning(SOP_ATTRIBUTE_INVALID, "wavelengths...");
       std::cout<<"break "<<input<<std::endl; 
       break;
-      //      return error();
     }
     if (!as_handle.isValid()) {
       addError(SOP_ATTRIBUTE_INVALID, "ampli_steps");
@@ -277,73 +245,55 @@ OP_ERROR SOP_Deform_Surface_inter::cookMySop(OP_Context &context) {
     GA_Offset prim_off;
     GA_Range range_prim = fs->getPrimitiveRange();
     int w = 0;
-    // for (GA_Iterator lcl_it((fs)->getPrimitiveRange()); lcl_it.blockAdvance(lcl_start, lcl_end); ) {
-    //   for (prim_off = lcl_start; prim_off < lcl_end; ++prim_off) {
     n_grid = gdp->getPointRange().getEntries();
-    //    std::cout<<"n_grid "<<n_grid<<std::endl;
+
     if (PARALLEL(t)) {
       for (GA_Iterator itp = range_prim.begin(); itp != range_prim.end(); ++itp) {
 	prim_off = *itp;
 	addContribFromPrimitive(fs, prim_off);
       }
     } else {
-    for (GA_Iterator itp = range_prim.begin(); itp != range_prim.end(); ++itp) {
-      prim_off = *itp;
-      //      addContribFromPrimitive(fs, prim_off);
-      float wl = w_handle.get(prim_off);
-      //      std::cout<<"WL  "<<wl<<std::endl;
-      int as = as_handle.get(prim_off);
-      float k = M_PI*2.0/wl;
-      float om = omega(k);//sqrtf(9.81*k + 0.074/1000*pow(k, 3));
-      const GA_Primitive* prim = fs->getPrimitive(prim_off);
-      GA_Range range = prim->getPointRange();
+      for (GA_Iterator itp = range_prim.begin(); itp != range_prim.end(); ++itp) {
+	prim_off = *itp;
+	float wl = w_handle.get(prim_off);
+	int as = as_handle.get(prim_off);
+	float k = M_PI*2.0/wl;
+	float om = omega(k);
+	const GA_Primitive* prim = fs->getPrimitive(prim_off);
+	GA_Range range = prim->getPointRange();
 	
-      GA_Offset ptoff;
-      GA_Range range_grid = gdp->getPointRange();
-      for(GA_Iterator itgr = range_grid.begin(); itgr != range_grid.end(); ++itgr) {
-      	//  	GA_FOR_ALL_PTOFF(gdp, ptoff) {
-      	UT_Vector3 Pvalue = gdp->getPos3((*itgr));
-      	COMPLEX a = 0;//exp(std::complex<float>(0, 1)*(k*Pvalue.x()));
-      	for(GA_Iterator it = range.begin(); it != range.end(); ++it) {
-      	  UT_Vector3 P_fs = fs->getPos3((*it));
-      	  float r = sqrt(pow(Pvalue.x() - P_fs.x(), 2) + pow(Pvalue.z() - P_fs.z(), 2));
-      	  float v = velocity(k, om);//0.5*omega/k;
-      	  float ar = 0, ai = 0;
-      	  //  float arn = 0, ain = 0;
+	GA_Offset ptoff;
+	GA_Range range_grid = gdp->getPointRange();
+	for(GA_Iterator itgr = range_grid.begin(); itgr != range_grid.end(); ++itgr) {
+	  UT_Vector3 Pvalue = gdp->getPos3((*itgr));
+	  COMPLEX a = 0;
+	  for(GA_Iterator it = range.begin(); it != range.end(); ++it) {
+	    UT_Vector3 P_fs = fs->getPos3((*it));
+	    float r = sqrt(pow(Pvalue.x() - P_fs.x(), 2) + pow(Pvalue.z() - P_fs.z(), 2));
+	    float v = velocity(k, om);
+	    float ar = 0, ai = 0;
 	    
-      	  fpreal t_ret = t - r/v;
-      	  OP_Context c_ret(t_ret);
-      	  // float ret = t_ret/dt;
-      	  // int f_ret = floor(ret) - 1;
-      	  int f_ret = floor(t_ret/(dt)) - 1;
-      	  // float q =  ret - f_ret;
-      	  //	    std::cout<<"q  "<<q<<std::endl;
-      	  f_ret = floor((float)f_ret/(float)as); 
-      	  if (t_ret < 0) {
-      	    --f_ret;
-      	  }
-      	  if (f_ret >= 0) {
-      	    afs = fs->findFloatTuple(GA_ATTRIB_POINT, "ampli", buffer_size);
-      	    tuple = afs->getAIFTuple();
-      	    tuple->get(afs, *it, ar, 2*f_ret);
-      	    tuple->get(afs, *it, ai, 2*f_ret+1);
-      	  }
-      	  // if (f_ret >= 0) {
-      	  //   afs = fs->findFloatTuple(GA_ATTRIB_POINT, "ampli", buffer_size);
-      	  //   tuple = afs->getAIFTuple();
-      	  //   tuple->get(afs, *it, arn, 2*f_ret);
-      	  //   tuple->get(afs, *it, ain, 2*f_ret+1);
-      	  // }
-      	  std::complex<float> ampli(ar, ai);
-      	  //	    std::complex<float> amplin(arn, ain);
-      	  //std::cout<<"damping_coef "<<damping_coef<<"  damping "<<damping(damping_coef, r, k)<<std::endl;
-      	  a += ampli*fund_solution(k*r)*damping(damping_coef, r, k);
-      	}
-      	Pvalue.y() += real(amp*a*exp(-COMPLEX(0, 1)*(om*(float)t)));
-      	gdp->setPos3((*itgr), Pvalue);
+	    fpreal t_ret = t - r/v;
+	    OP_Context c_ret(t_ret);
+	    int f_ret = floor(t_ret/(dt)) - 1;
+	    f_ret = floor((float)f_ret/(float)as); 
+	    if (t_ret < 0) {
+	      --f_ret;
+	    }
+	    if (f_ret >= 0) {
+	      afs = fs->findFloatTuple(GA_ATTRIB_POINT, "ampli", buffer_size);
+	      tuple = afs->getAIFTuple();
+	      tuple->get(afs, *it, ar, 2*f_ret);
+	      tuple->get(afs, *it, ai, 2*f_ret+1);
+	    }
+	    std::complex<float> ampli(ar, ai);
+	    a += ampli*fund_solution(k*r)*damping(damping_coef, r, k);
+	  }
+	  Pvalue.y() += real(amp*a*exp(-COMPLEX(0, 1)*(om*(float)t)));
+	  gdp->setPos3((*itgr), Pvalue);
+	}
+	++w;
       }
-      ++w;
-    }
     }
   }
   Phandle.bumpDataId();

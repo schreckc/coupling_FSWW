@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * SOFTWARE.
  *
  *----------------------------------------------------------------------------
-* Normalize height SOP (make the average y-coord = 0)
+ * Normalize height SOP (make the average y-coord = 0)
  *----------------------------------------------------------------------------
  * At each frame, sum the contribution of all the inputs for all wavelengths
  * at each point to get the height.
@@ -37,19 +37,19 @@
 
 class SOP_NormalizeHeight : public SOP_Node {
 public:
-    SOP_NormalizeHeight(OP_Network *net, const char *name, OP_Operator *op);
-    virtual ~SOP_NormalizeHeight();
+  SOP_NormalizeHeight(OP_Network *net, const char *name, OP_Operator *op);
+  virtual ~SOP_NormalizeHeight();
 
-    static PRM_Template myTemplateList[];
-    static OP_Node *myConstructor(OP_Network*, const char *, OP_Operator *);
+  static PRM_Template myTemplateList[];
+  static OP_Node *myConstructor(OP_Network*, const char *, OP_Operator *);
 
-    virtual OP_ERROR             cookInputGroups(OP_Context &context, 
-						 int alone = 0);
+  virtual OP_ERROR             cookInputGroups(OP_Context &context, 
+					       int alone = 0);
 
 protected:
-    virtual OP_ERROR cookMySop(OP_Context &context);
+  virtual OP_ERROR cookMySop(OP_Context &context);
 private:
-    void        getGroups(UT_String &str){ evalString(str, "group", 0, 0); }
+  void        getGroups(UT_String &str){ evalString(str, "group", 0, 0); }
 
   const GA_PointGroup *myGroup;
 };

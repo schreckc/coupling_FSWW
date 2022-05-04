@@ -1,7 +1,7 @@
 /*
  * MIT License
  * 
- * Copyright (c) 2019 Camille Schreck
+ * Copyright (c) 2022 Camille Schreck
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,16 @@
  *----------------------------------------------------------------------------
  * WaveParameters SOP
  *----------------------------------------------------------------------------
+ * Define the parameters of the sources
+ * Parameters:
+ *    -Amplitude: multiply the amplitude of every sources by this number
+ *    If defined by spectrum:
+ *        - use the wavelengths obtained by doing an FFT on a time window of size <window size> (time step 0.3) using the dispertion relationship defined in definition.hpp. The parameters shiftB and shiftU remove respectively the <shifb> smaller wavelength and <shiftu> bigger ones.
+ *   If not defined by spectrum  
+ *        -Minimum/maximum wavelength, wavelength multiplicative step: used to compute the range of wl as a geometric sequence
+ *    -Interactive sources
+ *    -Size of the buffer: size of the buffer recording past amplitude
+ *    -Damping
  */
 
 
