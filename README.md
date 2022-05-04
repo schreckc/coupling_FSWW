@@ -1,6 +1,6 @@
 Coupling 3D Liquid Simulation with 2D Wave Propagation for Large Scale Water Surface Animation Using the Equivalent Sources Method
 ----------------------------------------------------------------------------
-xCamille Schreck and Chris Wojtan
+Camille Schreck and Chris Wojtan
 IST Austria
 Université de Lorraine, CNRS, Inria, LORIA, France
 -----------------------------------------------------------------------------
